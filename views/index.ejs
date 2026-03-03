@@ -1,0 +1,108 @@
+<% layout('layout') %>
+
+<!-- Page Header -->
+<div class="page-header">
+  <h1>All Resources</h1>
+  <a href="/resources/new" class="btn btn-primary">+ Add Resource</a>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+  <form class="filter-form" action="/resources" method="GET">
+    <div class="filter-group">
+      <label for="search">Search</label>
+      <input
+        type="text"
+        id="search"
+        name="search"
+        placeholder="Search by title..."
+        value="<%= typeof query !== 'undefined' && query.search ? query.search : '' %>"
+      />
+    </div>
+    <div class="filter-group">
+      <label for="category">Category</label>
+      <select id="category" name="category">
+        <option value="">All Categories</option>
+        <option value="DSA" <%= typeof query !== 'undefined' && query.category === 'DSA' ? 'selected' : '' %>>DSA</option>
+        <option value="Backend" <%= typeof query !== 'undefined' && query.category === 'Backend' ? 'selected' : '' %>>Backend</option>
+        <option value="DevOps" <%= typeof query !== 'undefined' && query.category === 'DevOps' ? 'selected' : '' %>>DevOps</option>
+        <option value="AI" <%= typeof query !== 'undefined' && query.category === 'AI' ? 'selected' : '' %>>AI</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="difficulty">Difficulty</label>
+      <select id="difficulty" name="difficulty">
+        <option value="">All Levels</option>
+        <option value="Beginner" <%= typeof query !== 'undefined' && query.difficulty === 'Beginner' ? 'selected' : '' %>>Beginner</option>
+        <option value="Intermediate" <%= typeof query !== 'undefined' && query.difficulty === 'Intermediate' ? 'selected' : '' %>>Intermediate</option>
+        <option value="Advanced" <%= typeof query !== 'undefined' && query.difficulty === 'Advanced' ? 'selected' : '' %>>Advanced</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    </div>
+    <div class="filter-group">
+      <label>&nbsp;</label>
+      <a href="/resources" class="btn btn-secondary btn-sm">Clear</a>
+    </div>
+  </form>
+</div>
+
+<!-- Resources Table -->
+<% if (resources && resources.length > 0) { %>
+  <table class="resource-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Category</th>
+        <th>Difficulty</th>
+        <th>Rating</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% resources.forEach(resource => { %>
+        <tr>
+          <td>
+            <a href="/resources/<%= resource._id %>"><%= resource.title %></a>
+          </td>
+          <td>
+            <span class="badge badge-<%= resource.category.toLowerCase() %>">
+              <%= resource.category %>
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-<%= resource.difficulty.toLowerCase() %>">
+              <%= resource.difficulty %>
+            </span>
+          </td>
+          <td>
+            <span class="rating">
+              <% for (let i = 1; i <= 5; i++) { %>
+                <%= i <= resource.rating ? '★' : '☆' %>
+              <% } %>
+            </span>
+          </td>
+          <td><%= resource.createdAt.toLocaleDateString() %></td>
+          <td>
+            <div class="actions">
+              <a href="/resources/<%= resource._id %>" class="btn btn-primary btn-sm">View</a>
+              <a href="/resources/<%= resource._id %>/edit" class="btn btn-secondary btn-sm">Edit</a>
+              <form action="/resources/<%= resource._id %>?_method=DELETE" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this resource?');">
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } else { %>
+  <div class="empty-state">
+    <h2>No resources found</h2>
+    <p>Start building your developer resource library by adding your first resource.</p>
+    <a href="/resources/new" class="btn btn-primary">+ Add Your First Resource</a>
+  </div>
+<% } %>
