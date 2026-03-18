@@ -1,197 +1,180 @@
-# 📚 Developer Resource Manager (DRM)
+# Developer Resource Manager (DRM)
 
-A full-stack web application built with **Node.js, Express, MongoDB, and EJS** that allows developers to store, manage, categorize, and search learning resources such as DSA sheets, backend tutorials, DevOps documentation, and AI research papers.
+A full-stack application built with HTML, CSS, JavaScript, Node.js, Express, and MongoDB.
 
----
+The frontend is now static pages in the public folder, and the backend exposes REST APIs under /api/resources.
 
-## 🚀 Features
+## Features
 
-- **Full CRUD Operations** – Create, Read, Update, and Delete resources
-- **Category-based Filtering** – Filter by DSA, Backend, DevOps, or AI
-- **Difficulty Filtering** – Filter by Beginner, Intermediate, or Advanced
-- **Keyword Search** – Case-insensitive search by resource title
-- **Rating System** – Rate resources from 0 to 5 stars
-- **Tagging** – Add comma-separated tags to organize resources
-- **Form Validation** – Server-side validation with user-friendly error messages
-- **Request Logging** – Logs every HTTP request with method, URL, and timestamp
-- **Centralized Error Handling** – Clean error pages for all failure scenarios
-- **Responsive UI** – Clean, minimalist design that works on all screen sizes
+- Full CRUD operations for learning resources
+- Category and difficulty filtering
+- Keyword search across title, description, and tags
+- Resource rating support (0-5)
+- Tag support (comma-separated input)
+- Optional file upload for resources (PDF, DOC, DOCX, EPUB, TXT)
+- Centralized validation and error handling
+- Request logging middleware
 
----
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Technology | Purpose |
 |---|---|
 | Node.js | Server-side JavaScript runtime |
-| Express.js | Web application framework |
-| MongoDB Atlas | Cloud-hosted NoSQL database |
-| Mongoose | MongoDB object data modeling (ODM) |
-| EJS + ejs-mate | Server-side templating with layout support |
-| dotenv | Environment variable management |
-| method-override | HTTP method support (PUT/DELETE) in forms |
+| Express.js | Backend framework and routing |
+| MongoDB Atlas | Cloud NoSQL database |
+| Mongoose | ODM for schemas and DB operations |
+| Multer | File upload handling |
+| HTML/CSS/JavaScript | Frontend UI and client-side logic |
+| dotenv | Environment variables |
 | nodemon | Auto-restart during development |
 
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 DRM/
 ├── controllers/
-│   └── resourceController.js   # CRUD business logic
+│   └── resourceController.js
 ├── middlewares/
-│   ├── logger.js               # Request logging middleware
-│   ├── errorHandler.js         # Centralized error handling
-│   └── validateResource.js     # Form validation middleware
+│   ├── errorHandler.js
+│   ├── logger.js
+│   ├── uploadResourceFile.js
+│   └── validateResource.js
 ├── models/
-│   └── Resource.js             # Mongoose schema & model
-├── routes/
-│   └── resourceRoutes.js       # Express route definitions
-├── views/
-│   ├── layout.ejs              # Base HTML layout
-│   ├── index.ejs               # Resource listing page
-│   ├── add.ejs                 # Add resource form
-│   ├── edit.ejs                # Edit resource form
-│   ├── details.ejs             # Resource detail view
-│   └── error.ejs               # Error page
+│   └── Resource.js
 ├── public/
-│   └── css/
-│       └── style.css           # Application styles
-├── server.js                   # Application entry point
-├── package.json                # Dependencies & scripts
-├── .env                        # Environment variables
-└── .gitignore                  # Git ignore rules
+│   ├── add.html
+│   ├── details.html
+│   ├── edit.html
+│   ├── index.html
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       ├── add.js
+│       ├── details.js
+│       ├── edit.js
+│       ├── index.js
+│       └── theme.js
+├── routes/
+│   └── resourceRoutes.js
+├── uploads/
+├── server.js
+├── package.json
+├── .env
+└── .gitignore
 ```
 
----
-
-## ⚙️ Installation & Setup
+## Installation and Setup
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v14 or higher)
-- [MongoDB Atlas](https://www.mongodb.com/atlas) account (or local MongoDB)
+- Node.js (v14 or higher)
+- MongoDB Atlas account or local MongoDB
 - Git
 
 ### Steps
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Yadav-Anurag24/dev-resource-manager.git
-   cd developer-resource-manager
-   ```
+1. Clone the repository
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Configure environment variables**
-
-   Create a `.env` file in the root directory:
-   ```env
-   PORT=3000
-   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/developer-resource-manager?retryWrites=true&w=majority
-   NODE_ENV=development
-   ```
-
-4. **Start the application**
-   ```bash
-   # Development (with auto-restart)
-   npm run dev
-
-   # Production
-   npm start
-   ```
-
-5. **Open in browser**
-   ```
-   http://localhost:3000
-   ```
-
----
-
-## 📡 Routes
-
-| Method | Route | Description |
-|---|---|---|
-| `GET` | `/resources` | List all resources (with filtering & search) |
-| `GET` | `/resources/new` | Render add resource form |
-| `POST` | `/resources` | Create a new resource |
-| `GET` | `/resources/:id` | View resource details |
-| `GET` | `/resources/:id/edit` | Render edit resource form |
-| `PUT` | `/resources/:id` | Update a resource |
-| `DELETE` | `/resources/:id` | Delete a resource |
-
-### Filtering & Search Examples
-
-```
-GET /resources?category=DSA
-GET /resources?difficulty=Beginner
-GET /resources?search=graph
-GET /resources?category=Backend&difficulty=Advanced
+```bash
+git clone https://github.com/Yadav-Anurag24/dev-resource-manager.git
+cd dev-resource-manager
 ```
 
----
+2. Install dependencies
 
-## 📋 Resource Schema
+```bash
+npm install
+```
 
-| Field | Type | Constraints |
+3. Configure environment variables in .env
+
+```env
+PORT=3000
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/developer-resource-manager?retryWrites=true&w=majority
+NODE_ENV=development
+```
+
+4. Run the app
+
+```bash
+npm run dev
+```
+
+For production:
+
+```bash
+npm start
+```
+
+5. Open in browser
+
+http://localhost:3000
+
+## API Endpoints
+
+| Method | Endpoint | Description |
 |---|---|---|
-| `title` | String | Required, 3–150 chars, trimmed |
-| `description` | String | Required, min 10 chars |
-| `category` | String | Enum: DSA, Backend, DevOps, AI |
-| `difficulty` | String | Enum: Beginner, Intermediate, Advanced |
-| `link` | String | Required |
-| `tags` | [String] | Optional, array of tags |
-| `rating` | Number | 0–5, default: 0 |
-| `createdAt` | Date | Auto-generated |
-| `updatedAt` | Date | Auto-generated (timestamps) |
+| GET | /api/resources | List resources with optional query filters |
+| POST | /api/resources | Create resource (supports optional file upload) |
+| GET | /api/resources/:id | Get one resource by id |
+| PUT | /api/resources/:id | Update resource (supports optional file upload) |
+| DELETE | /api/resources/:id | Delete resource |
 
----
+### Query Filters
 
-## 🏗️ Architecture
+- category=DSA|Backend|DevOps|AI
+- difficulty=Beginner|Intermediate|Advanced
+- search=<keyword>
 
-This project follows the **MVC (Model-View-Controller)** pattern:
+Examples:
 
-- **Model** – Mongoose schema with built-in validation
-- **View** – EJS templates with layout support
-- **Controller** – Async request handlers with error forwarding
-- **Middleware** – Logger, validator, and centralized error handler
+```http
+GET /api/resources?category=DSA
+GET /api/resources?difficulty=Beginner
+GET /api/resources?search=graph
+```
 
----
+## Frontend Routes
 
-## 📜 Available Scripts
+- /
+- /index.html
+- /add.html
+- /edit.html?id=<resourceId>
+- /details.html?id=<resourceId>
+
+These pages use fetch() to call /api/resources and render data in the browser.
+
+## Resource Schema
+
+| Field | Type | Notes |
+|---|---|---|
+| title | String | Required, trimmed, min/max length |
+| description | String | Required, trimmed |
+| category | String | Enum: DSA, Backend, DevOps, AI |
+| difficulty | String | Enum: Beginner, Intermediate, Advanced |
+| link | String | Optional external URL |
+| fileName | String | Uploaded file original name |
+| filePath | String | Server path under /uploads |
+| fileMimeType | String | MIME type of uploaded file |
+| fileSize | Number | Size in bytes |
+| tags | [String] | Optional tags |
+| rating | Number | 0 to 5 |
+| createdAt | Date | Auto-generated |
+| updatedAt | Date | Auto-generated |
+
+## Available Scripts
 
 | Script | Command | Description |
 |---|---|---|
-| `start` | `npm start` | Start the server |
-| `dev` | `npm run dev` | Start with nodemon (auto-restart) |
+| start | npm start | Start server |
+| dev | npm run dev | Start with nodemon |
 
----
+## Notes
 
-## 🔮 Phase 2 Roadmap
+- The server exposes uploads via /uploads static route.
+- API responses are JSON with a success flag and data or error payload.
+- Validation failures return HTTP 400 with detailed errors.
 
-- [ ] JWT-based Authentication (Register/Login)
-- [ ] Role-based Authorization (Admin vs User)
-- [ ] REST API endpoints (`/api/resources`)
-- [ ] Analytics Dashboard with MongoDB Aggregation
-- [ ] Advanced Search (tag-based filtering, sorting, pagination)
-- [ ] Deployment to Render/Railway
+## License
 
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-feature`)
-3. Commit your changes (`git commit -m 'Add new feature'`)
-4. Push to the branch (`git push origin feature/new-feature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the ISC License.
+ISC
