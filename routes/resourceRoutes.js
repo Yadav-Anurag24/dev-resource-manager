@@ -2,34 +2,27 @@ const express = require('express');
 const router = express.Router();
 const {
   getAllResources,
-  renderAddForm,
   createResource,
   getResourceById,
-  renderEditForm,
   updateResource,
   deleteResource,
 } = require('../controllers/resourceController');
 const validateResource = require('../middlewares/validateResource');
+const uploadResourceFile = require('../middlewares/uploadResourceFile');
 
-// GET /resources          → List all resources (with filtering & search)
+// GET    /api/resources       → list all resources (filtering & search)
 router.get('/', getAllResources);
 
-// GET /resources/new      → Render add resource form
-router.get('/new', renderAddForm);
+// POST   /api/resources       → create a new resource
+router.post('/', uploadResourceFile.single('resourceFile'), validateResource, createResource);
 
-// POST /resources         → Create a new resource
-router.post('/', validateResource, createResource);
-
-// GET /resources/:id      → View resource details
+// GET    /api/resources/:id   → get a single resource
 router.get('/:id', getResourceById);
 
-// GET /resources/:id/edit → Render edit resource form
-router.get('/:id/edit', renderEditForm);
+// PUT    /api/resources/:id   → update a resource
+router.put('/:id', uploadResourceFile.single('resourceFile'), validateResource, updateResource);
 
-// PUT /resources/:id      → Update a resource
-router.put('/:id', updateResource);
-
-// DELETE /resources/:id   → Delete a resource
+// DELETE /api/resources/:id   → delete a resource
 router.delete('/:id', deleteResource);
 
 module.exports = router;

@@ -33,8 +33,28 @@ const resourceSchema = new mongoose.Schema(
     },
     link: {
       type: String,
-      required: [true, 'Resource link is required'],
+      default: '',
       trim: true,
+    },
+    fileName: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    filePath: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    fileMimeType: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    fileSize: {
+      type: Number,
+      default: 0,
+      min: [0, 'File size cannot be negative'],
     },
     tags: {
       type: [String],

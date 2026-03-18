@@ -6,22 +6,26 @@ const errorHandler = (err, req, res, next) => {
   console.error(`[ERROR] ${err.message}`);
   console.error(err.stack);
 
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
-
-  // If the request expects JSON, send JSON response
-  if (req.headers.accept && req.headers.accept.includes('application/json')) {
-    return res.status(statusCode).json({
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({
       success: false,
-      error: message,
+      error: 'Uploaded file is too large. Maximum allowed size is 15MB.',
     });
   }
 
-  // Otherwise render error in the view
-  res.status(statusCode).render('error', {
-    title: 'Error',
-    message,
-    statusCode,
+  if (err.message && err.message.includes('Only PDF, DOC, DOCX, EPUB, and TXT files are allowed')) {
+    return res.status(400).json({
+      success: false,
+      error: err.message,
+    });
+  }
+
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
+
+  res.status(statusCode).json({
+    success: false,
+    error: message,
   });
 };
 

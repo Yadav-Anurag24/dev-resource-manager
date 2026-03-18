@@ -1,12 +1,16 @@
-# Developer Resource Manager – Phase 1: Concepts & Viva Preparation Guide
+# Developer Resource Manager - Phase 1: Concepts & Viva Preparation Guide
+
+Note:
+- For CA planning, use CA1/CA2 roadmap in CA1_CA2_PHASE_PLAN.md.
+- This project currently uses static HTML/CSS/JS pages in public/ with API endpoints, not EJS views.
 
 ---
 
 ## 1. Project Overview
 
-**Developer Resource Manager (DRM)** is a full-stack web application built with Node.js, Express, MongoDB, and EJS. It allows developers to store, manage, categorize, and search learning resources like DSA sheets, backend tutorials, DevOps docs, and AI papers.
+**Developer Resource Manager (DRM)** is a full-stack web application built with Node.js, Express, MongoDB, and a static frontend (HTML/CSS/JavaScript). It allows developers to store, manage, categorize, and search learning resources like DSA sheets, backend tutorials, DevOps docs, and AI papers.
 
-**Phase 1** covers: CRUD operations, MongoDB integration, filtering/search, middleware, MVC architecture, and EJS templating.
+**Phase 1** covers: CRUD operations, MongoDB integration, filtering/search, middleware, and layered architecture.
 
 ---
 
@@ -18,8 +22,6 @@
 | **Express.js** | Web framework for routing, middleware, and HTTP handling |
 | **MongoDB** | NoSQL document database for storing resources |
 | **Mongoose** | ODM (Object Data Modeling) library for MongoDB |
-| **EJS** | Embedded JavaScript templating engine for server-side rendering |
-| **ejs-mate** | Layout support for EJS templates |
 | **dotenv** | Load environment variables from `.env` file |
 | **method-override** | Support PUT and DELETE methods in HTML forms |
 | **nodemon** | Auto-restart server during development |

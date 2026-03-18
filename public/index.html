@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Developer Resource Manager</title>
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem('drm-theme');
+        if (!theme) {
+          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (_) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/style.css?v=20260318" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">&#128218; Dev Resource Manager</a>
+      <ul class="navbar-nav">
+        <li><a href="/">Resources</a></li>
+        <li><a href="/add.html">Add Resource</a></li>
+        <li><button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle color theme"></button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="container">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>All Resources</h1>
+        <a href="/add.html" class="btn btn-primary">+ Add Resource</a>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="filter-form">
+          <div class="filter-group">
+            <label for="search">Search</label>
+            <div class="search-input-wrap">
+              <input type="text" id="search" placeholder="Search title, description, or tags..." />
+              <button id="searchClearBtn" class="search-clear-btn" type="button" aria-label="Clear search">x</button>
+            </div>
+          </div>
+          <div class="filter-group">
+            <label for="category">Category</label>
+            <select id="category">
+              <option value="">All Categories</option>
+              <option value="DSA">DSA</option>
+              <option value="Backend">Backend</option>
+              <option value="DevOps">DevOps</option>
+              <option value="AI">AI</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="difficulty">Difficulty</label>
+            <select id="difficulty">
+              <option value="">All Levels</option>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>&nbsp;</label>
+            <button id="filterBtn" class="btn btn-primary btn-sm" type="button">Filter</button>
+          </div>
+          <div class="filter-group">
+            <label>&nbsp;</label>
+            <button id="clearBtn" class="btn btn-secondary btn-sm" type="button">Clear</button>
+          </div>
+        </div>
+        <p id="search-status" class="search-status">Type to search resources instantly.</p>
+      </div>
+
+      <!-- Resources Container — populated by index.js -->
+      <div id="resources-container">
+        <p class="loading">Loading resources...</p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>Developer Resource Manager &copy; 2026</p>
+    </div>
+  </footer>
+
+  <script src="/js/theme.js?v=20260318"></script>
+  <script src="/js/index.js"></script>
+</body>
+</html>

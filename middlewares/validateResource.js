@@ -1,9 +1,11 @@
+const fs = require('fs/promises');
+
 /**
  * Validation Middleware for Resource Creation/Update
  * Validates required fields before reaching the controller.
  */
 const validateResource = (req, res, next) => {
-  const { title, description, category, difficulty, link } = req.body;
+  const { title, description, category, difficulty, link, existingFilePath } = req.body;
   const errors = [];
 
   // Title validation
@@ -36,18 +38,31 @@ const validateResource = (req, res, next) => {
     errors.push(`Difficulty must be one of: ${validDifficulties.join(', ')}`);
   }
 
-  // Link validation
-  if (!link || link.trim().length === 0) {
-    errors.push('Resource link is required');
+  // Source validation: at least one of link or file must exist
+  const linkValue = typeof link === 'string' ? link.trim() : '';
+  const hasUploadedFile = Boolean(req.file);
+  const hasExistingFile = typeof existingFilePath === 'string' && existingFilePath.trim().length > 0;
+
+  if (!linkValue && !hasUploadedFile && !hasExistingFile) {
+    errors.push('Provide at least one resource source: link or uploaded file');
   }
 
-  // If validation errors exist, re-render form with errors
+  if (linkValue) {
+    try {
+      const parsed = new URL(linkValue);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        errors.push('Resource link must start with http:// or https://');
+      }
+    } catch {
+      errors.push('Resource link must be a valid URL');
+    }
+  }
+
   if (errors.length > 0) {
-    return res.status(400).render('add', {
-      title: 'Add Resource',
-      errors,
-      formData: req.body,
-    });
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path).catch(() => {});
+    }
+    return res.status(400).json({ success: false, errors });
   }
 
   next();

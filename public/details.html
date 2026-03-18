@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resource Details – DRM</title>
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem('drm-theme');
+        if (!theme) {
+          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (_) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/style.css?v=20260318" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">&#128218; Dev Resource Manager</a>
+      <ul class="navbar-nav">
+        <li><a href="/">Resources</a></li>
+        <li><a href="/add.html">Add Resource</a></li>
+        <li><button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle color theme"></button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="container">
+
+      <!-- Loading state -->
+      <p id="page-loading" class="loading">Loading resource...</p>
+
+      <!-- Error Messages — shown by JS -->
+      <div id="error-box" class="alert alert-danger" style="display:none;"></div>
+
+      <!-- Detail card — populated and shown by JS -->
+      <div id="detail-content" class="detail-card" style="display:none;"></div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>Developer Resource Manager &copy; 2026</p>
+    </div>
+  </footer>
+
+  <script src="/js/theme.js?v=20260318"></script>
+  <script src="/js/details.js"></script>
+</body>
+</html>
