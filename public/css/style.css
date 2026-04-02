@@ -420,6 +420,11 @@ button.theme-toggle:hover {
   color: #6b21a8;
 }
 
+.badge-others {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
 .badge-beginner {
   background-color: #dcfce7;
   color: #166534;

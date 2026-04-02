@@ -19,7 +19,7 @@ const resourceSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Category is required'],
       enum: {
-        values: ['DSA', 'Backend', 'DevOps', 'AI'],
+        values: ['DSA', 'Backend', 'DevOps', 'AI', 'Others'],
         message: '{VALUE} is not a valid category',
       },
     },
