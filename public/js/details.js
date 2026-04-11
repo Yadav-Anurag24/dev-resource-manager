@@ -100,6 +100,25 @@ function renderDetails(r) {
          <p class="muted-text">No file uploaded.</p>
        </div>`;
 
+  // Ownership check: show Edit/Delete only for resource owner or admin
+  const currentUser = Auth.getUser();
+  const ownerId = r.owner && r.owner._id ? r.owner._id : (r.owner || '');
+  const canModify = currentUser && (currentUser.id === ownerId || currentUser.role === 'admin');
+
+  const ownerHtml = r.owner && r.owner.username
+    ? `<div class="detail-field">
+         <strong>Added By</strong>
+         <p>${escapeHtml(r.owner.username)}${r.owner.role === 'admin' ? ' <span class="badge badge-admin">Admin</span>' : ''}</p>
+       </div>`
+    : '';
+
+  const editBtn = canModify
+    ? `<a href="/edit.html?id=${r._id}" class="btn btn-primary">Edit</a>`
+    : '';
+  const deleteBtn = canModify
+    ? `<button onclick="deleteResource('${r._id}')" class="btn btn-danger">Delete</button>`
+    : '';
+
   const content = document.getElementById('detail-content');
   content.style.display = 'block';
   content.innerHTML = `
@@ -125,6 +144,8 @@ function renderDetails(r) {
       <div class="detail-tags">${tagsHtml}</div>
     </div>
 
+    ${ownerHtml}
+
     <div class="detail-field">
       <strong>Created</strong>
       <p>${new Date(r.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
@@ -133,8 +154,8 @@ function renderDetails(r) {
     ${updatedHtml}
 
     <div class="detail-actions">
-      <a href="/edit.html?id=${r._id}" class="btn btn-primary">Edit</a>
-      <button onclick="deleteResource('${r._id}')" class="btn btn-danger">Delete</button>
+      ${editBtn}
+      ${deleteBtn}
       <a href="/" class="btn btn-secondary">Back to List</a>
     </div>`;
 }
@@ -143,7 +164,13 @@ async function deleteResource(id) {
   if (!confirm('Are you sure you want to delete this resource?')) return;
 
   try {
-    const res  = await fetch(`/api/resources/${id}`, { method: 'DELETE' });
+    const res  = await fetch(`/api/resources/${id}`, {
+      method: 'DELETE',
+      headers: Auth.authHeaders(),
+    });
+
+    if (Auth.handleUnauthorized(res)) return;
+
     const json = await res.json();
 
     if (json.success) {

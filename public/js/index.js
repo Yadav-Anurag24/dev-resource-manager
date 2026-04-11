@@ -11,6 +11,12 @@ function escapeHtml(str) {
 let searchDebounceTimer;
 let activeRequestId = 0;
 
+// Pagination & sorting state
+let currentPage = 1;
+let currentSortBy = 'createdAt';
+let currentSortOrder = 'desc';
+const PAGE_LIMIT = 10;
+
 function escapeRegExp(str) {
   return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -46,6 +52,9 @@ function buildParamsFromFilters() {
   if (search) params.append('search', search);
   if (category) params.append('category', category);
   if (difficulty) params.append('difficulty', difficulty);
+  if (currentPage > 1) params.append('page', currentPage);
+  if (currentSortBy !== 'createdAt') params.append('sortBy', currentSortBy);
+  if (currentSortOrder !== 'desc') params.append('sortOrder', currentSortOrder);
 
   return { params, search, category, difficulty };
 }
@@ -94,19 +103,23 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('search').value = params.get('search') || '';
   document.getElementById('category').value  = params.get('category')   || '';
   document.getElementById('difficulty').value = params.get('difficulty') || '';
+  currentPage = parseInt(params.get('page'), 10) || 1;
+  currentSortBy = params.get('sortBy') || 'createdAt';
+  currentSortOrder = params.get('sortOrder') || 'desc';
 
   const searchInput = document.getElementById('search');
 
   // Event listeners
-  document.getElementById('filterBtn').addEventListener('click', () => fetchResources({ immediate: true }));
+  document.getElementById('filterBtn').addEventListener('click', () => { currentPage = 1; fetchResources({ immediate: true }); });
   document.getElementById('clearBtn').addEventListener('click', clearFilters);
   document.getElementById('searchClearBtn').addEventListener('click', clearSearchOnly);
-  document.getElementById('category').addEventListener('change', () => fetchResources({ immediate: true }));
-  document.getElementById('difficulty').addEventListener('change', () => fetchResources({ immediate: true }));
+  document.getElementById('category').addEventListener('change', () => { currentPage = 1; fetchResources({ immediate: true }); });
+  document.getElementById('difficulty').addEventListener('change', () => { currentPage = 1; fetchResources({ immediate: true }); });
 
   searchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
+      currentPage = 1;
       fetchResources({ immediate: true });
     }
   });
@@ -116,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(() => {
+      currentPage = 1;
       fetchResources({ immediate: true });
     }, 280);
   });
@@ -125,18 +139,33 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('search').value = latestParams.get('search') || '';
     document.getElementById('category').value = latestParams.get('category') || '';
     document.getElementById('difficulty').value = latestParams.get('difficulty') || '';
+    currentPage = parseInt(latestParams.get('page'), 10) || 1;
+    currentSortBy = latestParams.get('sortBy') || 'createdAt';
+    currentSortOrder = latestParams.get('sortOrder') || 'desc';
     updateSearchClearVisibility();
     fetchResources({ syncUrl: false, immediate: true });
   });
 
   updateSearchClearVisibility();
   fetchResources({ immediate: true });
+
+  // Hide "Add Resource" button in page header if not logged in
+  const addBtn = document.querySelector('.page-header .btn-primary');
+  if (addBtn && !Auth.isLoggedIn()) {
+    addBtn.style.display = 'none';
+  }
 });
 
 async function fetchResources(options = {}) {
   const { syncUrl = true } = options;
   const requestId = ++activeRequestId;
   const { params, search, category, difficulty } = buildParamsFromFilters();
+
+  // Add pagination & sorting to API call
+  params.set('page', currentPage);
+  params.set('limit', PAGE_LIMIT);
+  params.set('sortBy', currentSortBy);
+  params.set('sortOrder', currentSortOrder);
 
   if (syncUrl) {
     syncUrlParams(params);
@@ -154,13 +183,15 @@ async function fetchResources(options = {}) {
     if (!json.success) throw new Error(json.error || 'Failed to load resources');
 
     renderTable(json.data, search);
+    renderPagination(json.currentPage, json.totalPages, json.totalResources);
 
     const activeFilters = [search, category, difficulty].filter(Boolean).length;
     if (json.data.length === 0) {
       setSearchStatus(activeFilters > 0 ? 'No resources matched your current filters.' : 'No resources found yet.');
     } else {
-      const suffix = json.data.length === 1 ? 'resource' : 'resources';
-      setSearchStatus(`Showing ${json.data.length} ${suffix}.`);
+      const start = (json.currentPage - 1) * PAGE_LIMIT + 1;
+      const end = start + json.data.length - 1;
+      setSearchStatus(`Showing ${start}–${end} of ${json.totalResources} resources.`);
     }
   } catch (err) {
     if (requestId !== activeRequestId) return;
@@ -169,8 +200,20 @@ async function fetchResources(options = {}) {
   }
 }
 
+function sortByColumn(field) {
+  if (currentSortBy === field) {
+    currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+  } else {
+    currentSortBy = field;
+    currentSortOrder = field === 'title' ? 'asc' : 'desc';
+  }
+  currentPage = 1;
+  fetchResources({ immediate: true });
+}
+
 function renderTable(resources, searchTerm) {
   const container = document.getElementById('resources-container');
+  const currentUser = Auth.getUser();
 
   if (resources.length === 0) {
     const message = searchTerm
@@ -181,12 +224,21 @@ function renderTable(resources, searchTerm) {
       <div class="empty-state">
         <h2>No resources found</h2>
         <p>${message}</p>
-        <a href="/add.html" class="btn btn-primary">+ Add Your First Resource</a>
+        ${currentUser ? '<a href="/add.html" class="btn btn-primary">+ Add Your First Resource</a>' : '<a href="/login.html" class="btn btn-primary">Login to Add Resources</a>'}
       </div>`;
     return;
   }
 
-  const rows = resources.map((r) => `
+  function sortClass(field) {
+    if (currentSortBy !== field) return 'sortable';
+    return 'sortable ' + (currentSortOrder === 'asc' ? 'sort-asc' : 'sort-desc');
+  }
+
+  const rows = resources.map((r) => {
+    const ownerId = r.owner && r.owner._id ? r.owner._id : (r.owner || '');
+    const canModify = currentUser && (currentUser.id === ownerId || currentUser.role === 'admin');
+
+    return `
     <tr>
       <td>
         <a href="/details.html?id=${r._id}">${highlightMatch(r.title, searchTerm)}</a>
@@ -199,21 +251,22 @@ function renderTable(resources, searchTerm) {
       <td>
         <div class="actions">
           <a href="/details.html?id=${r._id}" class="btn btn-primary btn-sm">View</a>
-          <a href="/edit.html?id=${r._id}" class="btn btn-secondary btn-sm">Edit</a>
-          <button onclick="deleteResource('${r._id}')" class="btn btn-danger btn-sm">Delete</button>
+          ${canModify ? `<a href="/edit.html?id=${r._id}" class="btn btn-secondary btn-sm">Edit</a>` : ''}
+          ${canModify ? `<button onclick="deleteResource('${r._id}')" class="btn btn-danger btn-sm">Delete</button>` : ''}
         </div>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   container.innerHTML = `
     <table class="resource-table">
       <thead>
         <tr>
-          <th>Title</th>
-          <th>Category</th>
-          <th>Difficulty</th>
-          <th>Rating</th>
-          <th>Created</th>
+          <th class="${sortClass('title')}" onclick="sortByColumn('title')">Title</th>
+          <th class="${sortClass('category')}" onclick="sortByColumn('category')">Category</th>
+          <th class="${sortClass('difficulty')}" onclick="sortByColumn('difficulty')">Difficulty</th>
+          <th class="${sortClass('rating')}" onclick="sortByColumn('rating')">Rating</th>
+          <th class="${sortClass('createdAt')}" onclick="sortByColumn('createdAt')">Created</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -221,11 +274,74 @@ function renderTable(resources, searchTerm) {
     </table>`;
 }
 
+function renderPagination(page, totalPages, totalResources) {
+  const paginationContainer = document.getElementById('pagination-container');
+  if (!paginationContainer) return;
+
+  if (totalPages <= 1) {
+    paginationContainer.innerHTML = '';
+    return;
+  }
+
+  let html = '<div class="pagination">';
+
+  // Previous button
+  html += `<button ${page <= 1 ? 'disabled' : ''} onclick="goToPage(${page - 1})">← Prev</button>`;
+
+  // Page numbers with ellipsis
+  const pages = buildPageNumbers(page, totalPages);
+  pages.forEach((p) => {
+    if (p === '...') {
+      html += '<span class="page-info">…</span>';
+    } else {
+      html += `<button class="${p === page ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>`;
+    }
+  });
+
+  // Next button
+  html += `<button ${page >= totalPages ? 'disabled' : ''} onclick="goToPage(${page + 1})">Next →</button>`;
+
+  html += '</div>';
+  paginationContainer.innerHTML = html;
+}
+
+function buildPageNumbers(current, total) {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  const pages = [];
+  pages.push(1);
+
+  if (current > 3) pages.push('...');
+
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  if (current < total - 2) pages.push('...');
+
+  pages.push(total);
+  return pages;
+}
+
+function goToPage(page) {
+  currentPage = page;
+  fetchResources({ immediate: true });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function clearFilters() {
   clearTimeout(searchDebounceTimer);
   document.getElementById('search').value = '';
   document.getElementById('category').value  = '';
   document.getElementById('difficulty').value = '';
+  currentPage = 1;
+  currentSortBy = 'createdAt';
+  currentSortOrder = 'desc';
   updateSearchClearVisibility();
   fetchResources({ immediate: true });
 }
@@ -233,6 +349,7 @@ function clearFilters() {
 function clearSearchOnly() {
   clearTimeout(searchDebounceTimer);
   document.getElementById('search').value = '';
+  currentPage = 1;
   updateSearchClearVisibility();
   fetchResources({ immediate: true });
 }
@@ -241,7 +358,13 @@ async function deleteResource(id) {
   if (!confirm('Are you sure you want to delete this resource?')) return;
 
   try {
-    const res  = await fetch(`/api/resources/${id}`, { method: 'DELETE' });
+    const res  = await fetch(`/api/resources/${id}`, {
+      method: 'DELETE',
+      headers: Auth.authHeaders(),
+    });
+
+    if (Auth.handleUnauthorized(res)) return;
+
     const json = await res.json();
 
     if (json.success) {

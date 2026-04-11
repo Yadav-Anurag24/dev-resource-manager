@@ -13,14 +13,21 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    const safeBaseName = path
-      .basename(file.originalname, path.extname(file.originalname))
-      .replace(/[^a-zA-Z0-9-_]/g, '-')
-      .toLowerCase();
+    // Aggressively sanitize: strip path traversal, null bytes, and non-alphanumeric chars
+    const rawName = path.basename(file.originalname, path.extname(file.originalname));
+    const safeBaseName = rawName
+      .replace(/\0/g, '')                  // Remove null bytes
+      .replace(/\.\./g, '')               // Remove path traversal
+      .replace(/[^a-zA-Z0-9-_]/g, '-')    // Only allow safe characters
+      .replace(/-{2,}/g, '-')             // Collapse multiple dashes
+      .replace(/^-|-$/g, '')              // Trim leading/trailing dashes
+      .toLowerCase()
+      .slice(0, 100);                     // Cap base name length
 
+    const finalBase = safeBaseName || 'file';
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `${safeBaseName}-${uniqueSuffix}${ext}`);
+    const ext = path.extname(file.originalname).toLowerCase().replace(/[^a-z0-9.]/g, '');
+    cb(null, `${finalBase}-${uniqueSuffix}${ext}`);
   },
 });
 

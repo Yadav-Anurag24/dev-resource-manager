@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const resourceSchema = new mongoose.Schema(
   {
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Resource must have an owner'],
+    },
     title: {
       type: String,
       required: [true, 'Title is required'],

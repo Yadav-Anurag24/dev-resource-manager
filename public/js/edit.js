@@ -12,6 +12,9 @@ function escapeHtml(str) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Require authentication to edit resources
+  if (!Auth.requireAuth()) return;
+
   if (!resourceId) {
     showError('No resource ID in URL. Go back and try again.');
     return;
@@ -91,9 +94,12 @@ async function handleSubmit(e) {
     // Native fetch supports PUT — no method-override needed
     const res  = await fetch(`/api/resources/${resourceId}`, {
       method:  'PUT',
+      headers: Auth.authHeaders(),
       body: formData,
     });
     const json = await res.json();
+
+    if (Auth.handleUnauthorized(res)) return;
 
     if (json.success) {
       window.location.href = `/details.html?id=${resourceId}`;

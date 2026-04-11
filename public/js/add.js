@@ -9,6 +9,9 @@ function escapeHtml(str) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Require authentication to add resources
+  if (!Auth.requireAuth()) return;
+
   document.getElementById('add-form').addEventListener('submit', handleSubmit);
 });
 
@@ -40,9 +43,12 @@ async function handleSubmit(e) {
   try {
     const res  = await fetch('/api/resources', {
       method:  'POST',
+      headers: Auth.authHeaders(),
       body: formData,
     });
     const json = await res.json();
+
+    if (Auth.handleUnauthorized(res)) return;
 
     if (json.success) {
       // Redirect to the list on success

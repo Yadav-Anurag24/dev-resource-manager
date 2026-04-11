@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Resource Details – DRM</title>
+  <title>Login – Dev Resource Manager</title>
   <script>
     (function () {
       try {
@@ -37,16 +37,33 @@
   <!-- Main Content -->
   <main class="main">
     <div class="container">
+      <div class="form-card auth-card">
+        <h1 style="margin-bottom: 8px;">Welcome Back</h1>
+        <p class="auth-subtitle">Sign in to manage your developer resources.</p>
 
-      <!-- Loading state -->
-      <p id="page-loading" class="loading">Loading resource...</p>
+        <!-- Error Messages -->
+        <div id="error-box" class="alert alert-danger" style="display:none;"></div>
 
-      <!-- Error Messages — shown by JS -->
-      <div id="error-box" class="alert alert-danger" style="display:none;"></div>
+        <form id="login-form" novalidate>
 
-      <!-- Detail card — populated and shown by JS -->
-      <div id="detail-content" class="detail-card" style="display:none;"></div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="you@example.com" required />
+          </div>
 
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" required />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="submit-btn" class="btn btn-primary" style="width:100%;">Login</button>
+          </div>
+
+          <p class="auth-switch">Don't have an account? <a href="/register.html">Register here</a></p>
+
+        </form>
+      </div>
     </div>
   </main>
 
@@ -59,6 +76,6 @@
 
   <script src="/js/auth.js"></script>
   <script src="/js/theme.js?v=20260318"></script>
-  <script src="/js/details.js"></script>
+  <script src="/js/login.js"></script>
 </body>
 </html>
