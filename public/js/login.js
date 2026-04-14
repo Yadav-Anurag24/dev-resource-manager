@@ -57,6 +57,7 @@ async function handleLogin(e) {
 
     if (json.success && json.token) {
       Auth.saveAuth(json.token, json.user);
+      sessionStorage.setItem('toast', JSON.stringify({ type: 'success', message: 'Welcome back, ' + (json.user.username || '') + '!' }));
       window.location.href = '/';
     } else {
       const errors = json.errors || [json.error || 'Login failed'];

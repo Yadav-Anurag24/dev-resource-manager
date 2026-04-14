@@ -23,7 +23,7 @@ const validateResource = (req, res, next) => {
   }
 
   // Category validation
-  const validCategories = ['DSA', 'Backend', 'DevOps', 'AI', 'Others'];
+  const validCategories = ['DSA', 'Frontend', 'Backend', 'Database', 'DevOps', 'Cloud', 'AI', 'Security', 'Mobile', 'Testing', 'System Design', 'Others'];
   if (!category) {
     errors.push('Category is required');
   } else if (!validCategories.includes(category)) {

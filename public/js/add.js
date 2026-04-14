@@ -24,6 +24,7 @@ async function handleSubmit(e) {
   // Clear previous errors
   errorBox.style.display = 'none';
   submitBtn.disabled = true;
+  submitBtn.classList.add('btn-loading');
   submitBtn.textContent = 'Creating...';
 
   const resourceFileInput = document.getElementById('resourceFile');
@@ -51,7 +52,7 @@ async function handleSubmit(e) {
     if (Auth.handleUnauthorized(res)) return;
 
     if (json.success) {
-      // Redirect to the list on success
+      sessionStorage.setItem('toast', JSON.stringify({ type: 'success', message: 'Resource created successfully!' }));
       window.location.href = '/';
     } else {
       // Show validation errors
@@ -67,6 +68,7 @@ async function handleSubmit(e) {
     errorBox.style.display = 'block';
   } finally {
     submitBtn.disabled  = false;
+    submitBtn.classList.remove('btn-loading');
     submitBtn.textContent = 'Create Resource';
   }
 }

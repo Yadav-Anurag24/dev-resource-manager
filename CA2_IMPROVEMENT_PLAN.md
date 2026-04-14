@@ -116,12 +116,12 @@ Features are organized into three tiers based on impact and impressiveness:
 ### 2.3 Bookmark / Favorites System
 **Why**: Personalization feature — shows user-centric design thinking.
 
-- [ ] Add `bookmarks` array field to User model: `[{ type: ObjectId, ref: 'Resource' }]`
-- [ ] API endpoints:
+- [x] Add `bookmarks` array field to User model: `[{ type: ObjectId, ref: 'Resource' }]`
+- [x] API endpoints:
   - `POST /api/resources/:id/bookmark` — toggle bookmark
   - `GET /api/resources/bookmarks` — get user's bookmarked resources
-- [ ] Frontend: Bookmark icon (★ filled / ☆ empty) on each resource card/row
-- [ ] "My Bookmarks" page or filter toggle on main list
+- [x] Frontend: Bookmark icon (★ filled / ☆ empty) on each resource card/row
+- [x] "My Bookmarks" page or filter toggle on main list
 - [ ] Bookmark count displayed per resource
 
 **New files**: `public/bookmarks.html` (optional), bookmark routes
@@ -130,12 +130,12 @@ Features are organized into three tiers based on impact and impressiveness:
 ### 2.4 Toast Notification System (Replace Alerts)
 **Why**: Alert boxes are jarring. Toasts show UI/UX polish.
 
-- [ ] Create a toast notification component (pure CSS + JS, no library)
-- [ ] Types: Success (green), Error (red), Warning (yellow), Info (blue)
-- [ ] Auto-dismiss after 4 seconds with smooth slide-out animation
-- [ ] Stack multiple toasts vertically
-- [ ] Replace ALL `alert()` calls with toast notifications
-- [ ] Show toasts for: CRUD success, validation errors, auth errors, network failures
+- [x] Create a toast notification component (pure CSS + JS, no library)
+- [x] Types: Success (green), Error (red), Warning (yellow), Info (blue)
+- [x] Auto-dismiss after 4 seconds with smooth slide-out animation
+- [x] Stack multiple toasts vertically
+- [x] Replace ALL `alert()` calls with toast notifications
+- [x] Show toasts for: CRUD success, validation errors, auth errors, network failures
 
 **New files**: Toast CSS in `style.css`, toast utility in `public/js/toast.js`
 **Files to modify**: All frontend JS files

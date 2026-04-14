@@ -59,6 +59,12 @@ async function loadResource() {
     document.getElementById('cancel-link').href = `/details.html?id=${r._id}`;
     document.title = `Edit: ${r.title} – DRM`;
 
+    // Breadcrumb
+    const breadcrumbEl = document.getElementById('breadcrumb');
+    if (breadcrumbEl) {
+      breadcrumbEl.innerHTML = `<a href="/">Resources</a><span class="breadcrumb-sep">›</span><a href="/details.html?id=${r._id}">${escapeHtml(r.title)}</a><span class="breadcrumb-sep">›</span><span class="breadcrumb-current">Edit</span>`;
+    }
+
   } catch (err) {
     showError(err.message);
   }
@@ -73,6 +79,7 @@ async function handleSubmit(e) {
 
   errorBox.style.display  = 'none';
   submitBtn.disabled      = true;
+  submitBtn.classList.add('btn-loading');
   submitBtn.textContent   = 'Updating...';
 
   const resourceFileInput = document.getElementById('resourceFile');
@@ -102,6 +109,7 @@ async function handleSubmit(e) {
     if (Auth.handleUnauthorized(res)) return;
 
     if (json.success) {
+      sessionStorage.setItem('toast', JSON.stringify({ type: 'success', message: 'Resource updated successfully!' }));
       window.location.href = `/details.html?id=${resourceId}`;
     } else {
       const errors = json.errors || [json.error || 'Something went wrong'];
@@ -116,6 +124,7 @@ async function handleSubmit(e) {
     errorBox.style.display = 'block';
   } finally {
     submitBtn.disabled    = false;
+    submitBtn.classList.remove('btn-loading');
     submitBtn.textContent = 'Update Resource';
   }
 }

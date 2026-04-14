@@ -61,6 +61,7 @@ async function handleRegister(e) {
 
     if (json.success && json.token) {
       Auth.saveAuth(json.token, json.user);
+      sessionStorage.setItem('toast', JSON.stringify({ type: 'success', message: 'Account created! Welcome, ' + (json.user.username || '') + '!' }));
       window.location.href = '/';
     } else {
       const errors = json.errors || [json.error || 'Registration failed'];

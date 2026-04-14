@@ -2,9 +2,26 @@ const mongoose = require('mongoose');
 const fs = require('fs/promises');
 const path = require('path');
 const Resource = require('../models/Resource');
+const User = require('../models/User');
+const AuditLog = require('../models/AuditLog');
 
 function isInvalidResourceId(id) {
   return !mongoose.Types.ObjectId.isValid(id);
+}
+
+async function logAudit(action, user, resourceId, resourceTitle, details) {
+  try {
+    await AuditLog.create({
+      action,
+      userId: user._id,
+      username: user.username || user.email || 'Unknown',
+      resourceId: resourceId || null,
+      resourceTitle: resourceTitle || '',
+      details: details || '',
+    });
+  } catch {
+    // Audit logging is non-critical — never break the request
+  }
 }
 
 async function safelyDeleteStoredFile(filePath) {
@@ -109,6 +126,7 @@ const createResource = async (req, res, next) => {
 
     await resource.save();
     await resource.populate('owner', 'username role');
+    await logAudit('CREATE', req.user, resource._id, resource.title, `Created resource in ${resource.category}`);
     res.status(201).json({ success: true, data: resource });
   } catch (err) {
     if (err.name === 'ValidationError') {
@@ -210,6 +228,7 @@ const updateResource = async (req, res, next) => {
       { new: true, runValidators: true }
     ).populate('owner', 'username role');
 
+    await logAudit('UPDATE', req.user, resource._id, resource.title, `Updated resource`);
     res.json({ success: true, data: resource });
   } catch (err) {
     if (err.name === 'ValidationError') {
@@ -249,6 +268,7 @@ const deleteResource = async (req, res, next) => {
       await safelyDeleteStoredFile(resource.filePath);
     }
 
+    await logAudit('DELETE', req.user, resource._id, resource.title, `Deleted resource`);
     res.json({ success: true, message: 'Resource deleted successfully' });
   } catch (err) {
     next(err);
@@ -358,6 +378,160 @@ const getResourceStats = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Toggle bookmark on a resource
+ * @route   POST /api/resources/:id/bookmark
+ */
+const toggleBookmark = async (req, res, next) => {
+  try {
+    if (isInvalidResourceId(req.params.id)) {
+      return res.status(400).json({ success: false, error: 'Invalid resource ID' });
+    }
+
+    const resource = await Resource.findById(req.params.id);
+    if (!resource) {
+      return res.status(404).json({ success: false, error: 'Resource not found' });
+    }
+
+    const user = await User.findById(req.user._id);
+    const index = user.bookmarks.indexOf(req.params.id);
+    let bookmarked;
+
+    if (index === -1) {
+      user.bookmarks.push(req.params.id);
+      bookmarked = true;
+    } else {
+      user.bookmarks.splice(index, 1);
+      bookmarked = false;
+    }
+
+    await user.save();
+    res.json({ success: true, bookmarked });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * @desc    Get current user's bookmarked resources
+ * @route   GET /api/resources/bookmarks
+ */
+const getBookmarks = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id).populate({
+      path: 'bookmarks',
+      populate: { path: 'owner', select: 'username role' },
+    });
+
+    res.json({ success: true, data: user.bookmarks });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * @desc    Export resources as CSV or JSON
+ * @route   GET /api/resources/export?format=csv|json
+ */
+const exportResources = async (req, res, next) => {
+  try {
+    const { category, difficulty, search, format } = req.query;
+    const filter = {};
+
+    if (category && category !== '') {
+      filter.category = category;
+    }
+
+    if (difficulty && difficulty !== '') {
+      filter.difficulty = difficulty;
+    }
+
+    if (search && search.trim() !== '') {
+      const searchTerm = search.trim();
+      filter.$or = [
+        { title: { $regex: searchTerm, $options: 'i' } },
+        { description: { $regex: searchTerm, $options: 'i' } },
+        { tags: { $elemMatch: { $regex: searchTerm, $options: 'i' } } },
+      ];
+    }
+
+    const resources = await Resource.find(filter)
+      .populate('owner', 'username')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const exportedBy = req.user ? req.user.username || req.user.email : 'Anonymous';
+    const exportDate = new Date().toISOString();
+    const appliedFilters = { category: category || 'All', difficulty: difficulty || 'All', search: search || '' };
+
+    if (format === 'csv') {
+      const csvFields = ['Title', 'Description', 'Category', 'Difficulty', 'Rating', 'Tags', 'Link', 'Owner', 'Created At'];
+      const csvRows = resources.map((r) => {
+        return [
+          csvEscape(r.title),
+          csvEscape(r.description),
+          csvEscape(r.category),
+          csvEscape(r.difficulty),
+          r.rating || 0,
+          csvEscape((r.tags || []).join('; ')),
+          csvEscape(r.link || ''),
+          csvEscape(r.owner ? r.owner.username : 'Unknown'),
+          new Date(r.createdAt).toISOString(),
+        ].join(',');
+      });
+
+      const metaRows = [
+        `# Exported by: ${csvEscape(exportedBy)}`,
+        `# Export date: ${exportDate}`,
+        `# Filters — Category: ${appliedFilters.category} | Difficulty: ${appliedFilters.difficulty} | Search: ${appliedFilters.search || 'None'}`,
+        `# Total resources: ${resources.length}`,
+        '',
+      ];
+
+      const csvContent = [...metaRows, csvFields.join(','), ...csvRows].join('\n');
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="resources_export_${Date.now()}.csv"`);
+      return res.send(csvContent);
+    }
+
+    // Default: JSON export
+    const jsonExport = {
+      metadata: {
+        exportedBy,
+        exportDate,
+        filters: appliedFilters,
+        totalResources: resources.length,
+      },
+      resources: resources.map((r) => ({
+        title: r.title,
+        description: r.description,
+        category: r.category,
+        difficulty: r.difficulty,
+        rating: r.rating || 0,
+        tags: r.tags || [],
+        link: r.link || '',
+        owner: r.owner ? r.owner.username : 'Unknown',
+        createdAt: r.createdAt,
+      })),
+    };
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="resources_export_${Date.now()}.json"`);
+    return res.json(jsonExport);
+  } catch (err) {
+    next(err);
+  }
+};
+
+function csvEscape(value) {
+  const str = String(value);
+  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
 module.exports = {
   getAllResources,
   createResource,
@@ -365,4 +539,7 @@ module.exports = {
   updateResource,
   deleteResource,
   getResourceStats,
+  toggleBookmark,
+  getBookmarks,
+  exportResources,
 };

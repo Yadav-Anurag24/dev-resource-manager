@@ -16,6 +16,7 @@ const errorHandler = require('./middlewares/errorHandler');
 // Import routes
 const resourceRoutes = require('./routes/resourceRoutes');
 const authRoutes = require('./routes/authRoutes');
+const auditRoutes = require('./routes/auditRoutes');
 
 // ---------------------
 // .env Validation — crash early if critical vars are missing
@@ -48,6 +49,7 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+        scriptSrcAttr: ["'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", 'data:'],
         connectSrc: ["'self'"],
@@ -98,7 +100,12 @@ app.use(logger);
 
 // API Routes
 app.use('/api/resources', resourceRoutes);
-app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/audit-log', auditRoutes);
+if (process.env.NODE_ENV === 'test') {
+  app.use('/api/auth', authRoutes);
+} else {
+  app.use('/api/auth', authLimiter, authRoutes);
+}
 
 // Serve index.html for root
 app.get('/', (req, res) => {
@@ -116,26 +123,29 @@ app.use(errorHandler);
 // ---------------------
 // Database Connection & Server Start
 // ---------------------
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => {
-    console.log('✅ Connected to MongoDB successfully');
-  })
-  .catch((err) => {
-    console.error('❌ MongoDB connection error:', err.message);
-    console.warn('⚠️  Server running without database — frontend only');
+// Skip auto-connect and listen when imported by tests
+if (process.env.NODE_ENV !== 'test') {
+  mongoose
+    .connect(MONGODB_URI)
+    .then(() => {
+      console.log('✅ Connected to MongoDB successfully');
+    })
+    .catch((err) => {
+      console.error('❌ MongoDB connection error:', err.message);
+      console.warn('⚠️  Server running without database — frontend only');
+    });
+
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
 
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
-
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`❌ Port ${PORT} is already in use. Kill the other process or use a different port.`);
-    process.exit(1);
-  }
-  throw err;
-});
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`❌ Port ${PORT} is already in use. Kill the other process or use a different port.`);
+      process.exit(1);
+    }
+    throw err;
+  });
+}
 
 module.exports = app;

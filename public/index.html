@@ -12,6 +12,10 @@
           theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
         document.documentElement.setAttribute('data-theme', theme);
+        var sb = localStorage.getItem('drm-sidebar');
+        if (sb === 'collapsed' && window.innerWidth > 768) {
+          document.documentElement.classList.add('sidebar-will-collapse');
+        }
       } catch (_) {
         document.documentElement.setAttribute('data-theme', 'light');
       }
@@ -21,22 +25,75 @@
 </head>
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="container">
-      <a href="/" class="navbar-brand">&#128218; Dev Resource Manager</a>
-      <ul class="navbar-nav">
-        <li><a href="/">Resources</a></li>
-        <li id="nav-add-resource"><a href="/add.html">Add Resource</a></li>
-        <li><a href="/dashboard.html">Dashboard</a></li>
-        <li><button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle color theme"></button></li>
-      </ul>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-brand-icon">&#128218;</span>
+      <span class="sidebar-brand-text" title="Developer Resource Manager"><span class="brand-short">DRM</span><span class="brand-full">Developer Resource Manager</span></span>
     </div>
-  </nav>
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-link" data-page="resources" title="Resources">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="sidebar-text">Resources</span>
+      </a>
+      <a href="/add.html" class="sidebar-link" data-page="add" id="nav-add-resource" title="Add Resource">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span class="sidebar-text">Add Resource</span>
+      </a>
+      <a href="/dashboard.html" class="sidebar-link" data-page="dashboard" title="Dashboard">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+        <span class="sidebar-text">Dashboard</span>
+      </a>
+      <a href="/audit.html" class="sidebar-link" data-page="audit" id="nav-audit-log" title="Activity Log">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+        <span class="sidebar-text">Activity Log</span>
+      </a>
+      <div class="sidebar-divider"></div>
+      <button class="sidebar-link sidebar-action" id="bookmarkToggleBtn" title="My Bookmarks" style="display:none;">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span class="sidebar-text">My Bookmarks</span>
+      </button>
+      <div class="sidebar-export-wrap" id="export-bar" style="display:none;">
+        <button class="sidebar-link sidebar-action" id="exportBtn" title="Export">
+          <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span class="sidebar-text">Export</span>
+        </button>
+        <div id="exportMenu" class="export-menu sidebar-export-menu">
+          <button class="export-option" onclick="exportResources('csv')">Export as CSV</button>
+          <button class="export-option" onclick="exportResources('json')">Export as JSON</button>
+        </div>
+      </div>
+    </nav>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <!-- Top Header Bar -->
+  <header class="topbar" id="topbar">
+    <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="Toggle sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="topbar-right">
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle color theme"></button>
+      <div id="topbar-auth-area"></div>
+    </div>
+  </header>
+
+  <!-- Layout Content -->
+  <div class="layout-content">
 
   <!-- Main Content -->
   <main class="main">
     <div class="container">
+
+      <!-- Hero Section (P6) -->
+      <section class="hero-banner" id="hero-banner">
+        <div class="hero-content">
+          <h1 class="hero-title" id="hero-title">Developer Resource Manager</h1>
+          <p class="hero-subtitle" id="hero-subtitle">Curate, organize and share the best developer resources in one place.</p>
+          <div class="hero-stats" id="hero-stats"></div>
+        </div>
+        <div class="hero-cta" id="hero-cta"></div>
+      </section>
 
       <!-- Page Header -->
       <div class="page-header">
@@ -44,51 +101,72 @@
         <a href="/add.html" class="btn btn-primary">+ Add Resource</a>
       </div>
 
-      <!-- Filter Bar -->
-      <div class="filter-bar">
-        <div class="filter-form">
-          <div class="filter-group">
-            <label for="search">Search</label>
-            <div class="search-input-wrap">
-              <input type="text" id="search" placeholder="Search title, description, or tags..." />
-              <button id="searchClearBtn" class="search-clear-btn" type="button" aria-label="Clear search">x</button>
+      <!-- Filter Bar (P4: Collapsible) -->
+      <div class="filter-bar filter-open" id="filter-bar">
+        <div class="filter-header" id="filter-header">
+          <div class="filter-header-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            <span>Filters</span>
+            <span class="filter-count-badge" id="filter-count-badge">0</span>
+          </div>
+          <svg class="filter-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="filter-body">
+          <div class="filter-form">
+            <div class="filter-group">
+              <label for="search">Search</label>
+              <div class="search-input-wrap">
+                <input type="text" id="search" placeholder="Search title, description, or tags..." />
+                <button id="searchClearBtn" class="search-clear-btn" type="button" aria-label="Clear search">x</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label for="category">Category</label>
+              <select id="category">
+                <option value="">All Categories</option>
+                <option value="DSA">DSA</option>
+                <option value="Frontend">Frontend</option>
+                <option value="Backend">Backend</option>
+                <option value="Database">Database</option>
+                <option value="DevOps">DevOps</option>
+                <option value="Cloud">Cloud</option>
+                <option value="AI">AI</option>
+                <option value="Security">Security</option>
+                <option value="Mobile">Mobile</option>
+                <option value="Testing">Testing</option>
+                <option value="System Design">System Design</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="difficulty">Difficulty</label>
+              <select id="difficulty">
+                <option value="">All Levels</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>&nbsp;</label>
+              <button id="resetBtn" class="btn btn-secondary btn-sm" type="button">Reset</button>
             </div>
           </div>
-          <div class="filter-group">
-            <label for="category">Category</label>
-            <select id="category">
-              <option value="">All Categories</option>
-              <option value="DSA">DSA</option>
-              <option value="Backend">Backend</option>
-              <option value="DevOps">DevOps</option>
-              <option value="AI">AI</option>
-              <option value="Others">Others</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="difficulty">Difficulty</label>
-            <select id="difficulty">
-              <option value="">All Levels</option>
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>&nbsp;</label>
-            <button id="filterBtn" class="btn btn-primary btn-sm" type="button">Filter</button>
-          </div>
-          <div class="filter-group">
-            <label>&nbsp;</label>
-            <button id="clearBtn" class="btn btn-secondary btn-sm" type="button">Clear</button>
-          </div>
         </div>
-        <p id="search-status" class="search-status">Type to search resources instantly.</p>
       </div>
+      <p id="search-status" class="search-status" style="margin: -16px 0 16px 4px;">Type to search resources instantly.</p>
+
+      <!-- Active Filter Chips -->
+      <div class="filter-chips" id="filter-chips"></div>
 
       <!-- Resources Container — populated by index.js -->
       <div id="resources-container">
-        <p class="loading">Loading resources...</p>
+        <div class="skeleton-table">
+          <div class="skeleton-header"><span class="skeleton-cell w-40"></span><span class="skeleton-cell w-15"></span><span class="skeleton-cell w-15"></span><span class="skeleton-cell w-10"></span><span class="skeleton-cell w-20"></span></div>
+          <div class="skeleton-row"><span class="skeleton-cell w-40"></span><span class="skeleton-cell w-15"></span><span class="skeleton-cell w-15"></span><span class="skeleton-cell w-10"></span><span class="skeleton-cell w-20"></span></div>
+          <div class="skeleton-row"><span class="skeleton-cell w-40"></span><span class="skeleton-cell w-15"></span><span class="skeleton-cell w-15"></span><span class="skeleton-cell w-10"></span><span class="skeleton-cell w-20"></span></div>
+          <div class="skeleton-row"><span class="skeleton-cell w-40"></span><span class="skeleton-cell w-15"></span><span class="skeleton-cell w-15"></span><span class="skeleton-cell w-10"></span><span class="skeleton-cell w-20"></span></div>
+        </div>
       </div>
 
       <!-- Pagination Controls — populated by index.js -->
@@ -100,12 +178,50 @@
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <p>Developer Resource Manager &copy; 2026</p>
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">📚 Dev Resource Manager</div>
+          <p class="footer-desc">A full-stack platform to curate, organize and share developer learning resources.</p>
+          <div class="footer-tech">
+            <span class="footer-tech-badge">Node.js</span>
+            <span class="footer-tech-badge">Express</span>
+            <span class="footer-tech-badge">MongoDB</span>
+            <span class="footer-tech-badge">Vanilla JS</span>
+          </div>
+        </div>
+        <div>
+          <div class="footer-heading">Quick Links</div>
+          <ul class="footer-links">
+            <li><a href="/">Resources</a></li>
+            <li><a href="/dashboard.html">Dashboard</a></li>
+            <li><a href="/add.html">Add Resource</a></li>
+            <li><a href="/audit.html">Activity Log</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Account</div>
+          <ul class="footer-links">
+            <li><a href="/login.html">Login</a></li>
+            <li><a href="/register.html">Register</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 Developer Resource Manager</span>
+        <div class="footer-bottom-links">
+          <a href="/">Home</a>
+          <a href="/dashboard.html">Dashboard</a>
+        </div>
+      </div>
     </div>
   </footer>
+  </div>
 
   <script src="/js/auth.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/confirm.js"></script>
   <script src="/js/theme.js?v=20260318"></script>
+  <script src="/js/sidebar.js"></script>
   <script src="/js/index.js"></script>
 </body>
 </html>

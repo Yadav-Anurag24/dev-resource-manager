@@ -17,10 +17,14 @@ function safeHref(url) {
   return /^https?:\/\//i.test(clean) ? clean : '#';
 }
 
-function renderStars(rating) {
-  let stars = '';
-  for (let i = 1; i <= 5; i++) stars += i <= rating ? '★' : '☆';
-  return stars;
+function renderStars(rating, showNumeric = false) {
+  const filled = '<svg class="star-icon star-filled" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+  const empty  = '<svg class="star-icon star-empty"  viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+  let html = '<span class="star-group">';
+  for (let i = 1; i <= 5; i++) html += i <= rating ? filled : empty;
+  if (showNumeric) html += `<span class="star-numeric">${rating}/5</span>`;
+  html += '</span>';
+  return html;
 }
 
 function formatFileSize(bytes) {
@@ -48,6 +52,7 @@ async function loadResource() {
 
     if (!json.success) throw new Error(json.error || 'Resource not found');
     renderDetails(json.data);
+    loadBookmarkState();
   } catch (err) {
     showError(err.message);
   }
@@ -56,6 +61,12 @@ async function loadResource() {
 function renderDetails(r) {
   document.getElementById('page-loading').style.display = 'none';
   document.title = `${r.title} – DRM`;
+
+  // Breadcrumb
+  const breadcrumbEl = document.getElementById('breadcrumb');
+  if (breadcrumbEl) {
+    breadcrumbEl.innerHTML = `<a href="/">Resources</a><span class="breadcrumb-sep">›</span><span class="breadcrumb-current">${escapeHtml(r.title)}</span>`;
+  }
 
   // Tags
   const tagsHtml = r.tags && r.tags.length > 0
@@ -119,15 +130,23 @@ function renderDetails(r) {
     ? `<button onclick="deleteResource('${r._id}')" class="btn btn-danger">Delete</button>`
     : '';
 
+  // Bookmark button (only for logged-in users)
+  const bookmarkBtnHtml = currentUser
+    ? `<button id="detail-bookmark-btn" class="bookmark-btn" onclick="toggleBookmark('${r._id}')" title="Toggle bookmark">☆</button>`
+    : '';
+
   const content = document.getElementById('detail-content');
   content.style.display = 'block';
   content.innerHTML = `
-    <h1>${escapeHtml(r.title)}</h1>
+    <div class="detail-header-row">
+      <h1>${escapeHtml(r.title)}</h1>
+      ${bookmarkBtnHtml}
+    </div>
 
     <div class="detail-meta">
       <span class="badge badge-${r.category.toLowerCase()}">${escapeHtml(r.category)}</span>
       <span class="badge badge-${r.difficulty.toLowerCase()}">${escapeHtml(r.difficulty)}</span>
-      <span class="rating">${renderStars(r.rating)} (${r.rating}/5)</span>
+      <span class="rating">${renderStars(r.rating, true)}</span>
     </div>
 
     <div class="detail-field">
@@ -161,7 +180,8 @@ function renderDetails(r) {
 }
 
 async function deleteResource(id) {
-  if (!confirm('Are you sure you want to delete this resource?')) return;
+  const ok = await confirmModal('Delete this resource?', 'This action cannot be undone. The resource will be permanently removed.');
+  if (!ok) return;
 
   try {
     const res  = await fetch(`/api/resources/${id}`, {
@@ -174,12 +194,13 @@ async function deleteResource(id) {
     const json = await res.json();
 
     if (json.success) {
+      sessionStorage.setItem('toast', JSON.stringify({ type: 'success', message: 'Resource deleted successfully!' }));
       window.location.href = '/';
     } else {
-      alert('Error: ' + (json.error || 'Failed to delete'));
+      Toast.error(json.error || 'Failed to delete resource');
     }
   } catch {
-    alert('Network error. Please try again.');
+    Toast.error('Network error. Please try again.');
   }
 }
 
@@ -188,4 +209,61 @@ function showError(msg) {
   const errorBox = document.getElementById('error-box');
   errorBox.textContent   = msg;
   errorBox.style.display = 'block';
+}
+
+// ─── Bookmark Functions ────────────────────────────────────────
+
+async function loadBookmarkState() {
+  if (!Auth.isLoggedIn() || !resourceId) return;
+  try {
+    const res = await fetch('/api/resources/bookmarks', { headers: Auth.authHeaders() });
+    if (!res.ok) return;
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      const isBookmarked = json.data.some((r) => r._id === resourceId);
+      const btn = document.getElementById('detail-bookmark-btn');
+      if (btn) {
+        btn.classList.toggle('bookmarked', isBookmarked);
+        btn.textContent = isBookmarked ? '★' : '☆';
+        btn.title = isBookmarked ? 'Remove bookmark' : 'Add bookmark';
+      }
+    }
+  } catch {
+    // Non-critical — ignore
+  }
+}
+
+async function toggleBookmark(id) {
+  if (!Auth.isLoggedIn()) {
+    Toast.warning('Please log in to bookmark resources.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/resources/${id}/bookmark`, {
+      method: 'POST',
+      headers: Auth.authHeaders(),
+    });
+
+    if (Auth.handleUnauthorized(res)) return;
+    const json = await res.json();
+
+    if (json.success) {
+      const btn = document.getElementById('detail-bookmark-btn');
+      if (btn) {
+        btn.classList.toggle('bookmarked', json.bookmarked);
+        btn.textContent = json.bookmarked ? '★' : '☆';
+        btn.title = json.bookmarked ? 'Remove bookmark' : 'Add bookmark';
+      }
+      if (json.bookmarked) {
+        Toast.success('Bookmark added!');
+      } else {
+        Toast.info('Bookmark removed.');
+      }
+    } else {
+      Toast.error(json.error || 'Failed to toggle bookmark');
+    }
+  } catch {
+    Toast.error('Network error. Please try again.');
+  }
 }

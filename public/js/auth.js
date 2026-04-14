@@ -93,51 +93,56 @@ const Auth = (function () {
   // --- Update Navbar for auth state ---
 
   function updateNavbar() {
-    const navList = document.querySelector('.navbar-nav');
-    if (!navList) return;
+    var authArea = document.getElementById('topbar-auth-area');
+    if (!authArea) return;
 
-    // Remove any existing auth links (to avoid duplicates on re-render)
-    navList.querySelectorAll('.auth-nav-item').forEach(el => el.remove());
+    // Clear existing auth content
+    authArea.innerHTML = '';
 
-    // Show/hide "Add Resource" nav link based on auth state
-    const addResourceNav = document.getElementById('nav-add-resource');
+    // Show/hide "Add Resource" sidebar link based on auth state
+    var addResourceNav = document.getElementById('nav-add-resource');
     if (addResourceNav) {
       addResourceNav.style.display = isLoggedIn() ? '' : 'none';
     }
 
-    const user = getUser();
-    const themeToggleLi = navList.querySelector('li:has(#theme-toggle)') || navList.lastElementChild;
+    var user = getUser();
 
     if (user && getToken()) {
-      // Logged in: show username + logout
-      const userLi = document.createElement('li');
-      userLi.className = 'auth-nav-item';
-      userLi.innerHTML = `<span class="nav-user-badge" title="${escapeHtmlAttr(user.email)}">
-        <span class="nav-user-avatar">${escapeHtmlAttr(user.username.charAt(0).toUpperCase())}</span>
-        ${escapeHtmlAttr(user.username)}${user.role === 'admin' ? ' <span class="badge badge-admin">Admin</span>' : ''}
-      </span>`;
-      navList.insertBefore(userLi, themeToggleLi);
+      // Logged in: show avatar dropdown
+      authArea.innerHTML =
+        '<div class="user-dropdown-wrap">' +
+          '<button class="user-avatar-btn" id="user-avatar-btn" type="button" title="' + escapeHtmlAttr(user.username) + '">' +
+            escapeHtmlAttr(user.username.charAt(0).toUpperCase()) +
+          '</button>' +
+          '<div class="user-dropdown" id="user-dropdown">' +
+            '<div class="user-dropdown-header">' +
+              '<span class="user-dropdown-name">' + escapeHtmlAttr(user.username) + '</span>' +
+              '<span class="user-dropdown-email">' + escapeHtmlAttr(user.email) + '</span>' +
+              (user.role === 'admin' ? '<span class="user-dropdown-badge">Admin</span>' : '') +
+            '</div>' +
+            '<div class="user-dropdown-body">' +
+              '<a href="/profile.html" class="user-dropdown-item">Profile</a>' +
+              '<a href="/" class="user-dropdown-item">My Resources</a>' +
+              '<a href="/dashboard.html" class="user-dropdown-item">Dashboard</a>' +
+              '<a href="#" class="user-dropdown-item logout-item" id="dropdown-logout-btn">Logout</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
 
-      const logoutLi = document.createElement('li');
-      logoutLi.className = 'auth-nav-item';
-      logoutLi.innerHTML = `<a href="#" id="logout-btn" class="nav-logout-link">Logout</a>`;
-      navList.insertBefore(logoutLi, themeToggleLi);
-
-      logoutLi.querySelector('#logout-btn').addEventListener('click', (e) => {
-        e.preventDefault();
-        logout();
-      });
+      var logoutBtn = document.getElementById('dropdown-logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          logout();
+        });
+      }
     } else {
-      // Not logged in: show login + register
-      const loginLi = document.createElement('li');
-      loginLi.className = 'auth-nav-item';
-      loginLi.innerHTML = '<a href="/login.html">Login</a>';
-      navList.insertBefore(loginLi, themeToggleLi);
-
-      const registerLi = document.createElement('li');
-      registerLi.className = 'auth-nav-item';
-      registerLi.innerHTML = '<a href="/register.html">Register</a>';
-      navList.insertBefore(registerLi, themeToggleLi);
+      // Not logged in: show login + register buttons
+      authArea.innerHTML =
+        '<div class="topbar-auth-links">' +
+          '<a href="/login.html" class="btn btn-sm btn-primary">Login</a>' +
+          '<a href="/register.html" class="btn btn-sm btn-secondary">Register</a>' +
+        '</div>';
     }
   }
 

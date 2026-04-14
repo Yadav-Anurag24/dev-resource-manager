@@ -12,6 +12,10 @@
           theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
         document.documentElement.setAttribute('data-theme', theme);
+        var sb = localStorage.getItem('drm-sidebar');
+        if (sb === 'collapsed' && window.innerWidth > 768) {
+          document.documentElement.classList.add('sidebar-will-collapse');
+        }
       } catch (_) {
         document.documentElement.setAttribute('data-theme', 'light');
       }
@@ -21,22 +25,54 @@
 </head>
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="container">
-      <a href="/" class="navbar-brand">&#128218; Dev Resource Manager</a>
-      <ul class="navbar-nav">
-        <li><a href="/">Resources</a></li>
-        <li id="nav-add-resource"><a href="/add.html">Add Resource</a></li>
-        <li><a href="/dashboard.html">Dashboard</a></li>
-        <li><button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle color theme"></button></li>
-      </ul>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-brand-icon">&#128218;</span>
+      <span class="sidebar-brand-text" title="Developer Resource Manager"><span class="brand-short">DRM</span><span class="brand-full">Developer Resource Manager</span></span>
     </div>
-  </nav>
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-link" data-page="resources" title="Resources">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="sidebar-text">Resources</span>
+      </a>
+      <a href="/add.html" class="sidebar-link" data-page="add" id="nav-add-resource" title="Add Resource">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span class="sidebar-text">Add Resource</span>
+      </a>
+      <a href="/dashboard.html" class="sidebar-link" data-page="dashboard" title="Dashboard">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+        <span class="sidebar-text">Dashboard</span>
+      </a>
+      <a href="/audit.html" class="sidebar-link" data-page="audit" id="nav-audit-log" title="Activity Log">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+        <span class="sidebar-text">Activity Log</span>
+      </a>
+    </nav>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <!-- Top Header Bar -->
+  <header class="topbar" id="topbar">
+    <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="Toggle sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="topbar-right">
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle color theme"></button>
+      <div id="topbar-auth-area"></div>
+    </div>
+  </header>
+
+  <!-- Layout Content -->
+  <div class="layout-content">
 
   <!-- Main Content -->
   <main class="main">
     <div class="container">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" id="breadcrumb">
+        <a href="/">Resources</a><span class="breadcrumb-sep">›</span><span class="breadcrumb-current">Edit</span>
+      </nav>
       <div class="form-card">
         <h1 style="margin-bottom: 24px;">Edit Resource</h1>
 
@@ -64,9 +100,16 @@
             <select id="category">
               <option value="">Select Category</option>
               <option value="DSA">DSA</option>
+              <option value="Frontend">Frontend</option>
               <option value="Backend">Backend</option>
+              <option value="Database">Database</option>
               <option value="DevOps">DevOps</option>
+              <option value="Cloud">Cloud</option>
               <option value="AI">AI</option>
+              <option value="Security">Security</option>
+              <option value="Mobile">Mobile</option>
+              <option value="Testing">Testing</option>
+              <option value="System Design">System Design</option>
               <option value="Others">Others</option>
             </select>
           </div>
@@ -127,12 +170,49 @@
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <p>Developer Resource Manager &copy; 2026</p>
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">📚 Dev Resource Manager</div>
+          <p class="footer-desc">A full-stack platform to curate, organize and share developer learning resources.</p>
+          <div class="footer-tech">
+            <span class="footer-tech-badge">Node.js</span>
+            <span class="footer-tech-badge">Express</span>
+            <span class="footer-tech-badge">MongoDB</span>
+            <span class="footer-tech-badge">Vanilla JS</span>
+          </div>
+        </div>
+        <div>
+          <div class="footer-heading">Quick Links</div>
+          <ul class="footer-links">
+            <li><a href="/">Resources</a></li>
+            <li><a href="/dashboard.html">Dashboard</a></li>
+            <li><a href="/add.html">Add Resource</a></li>
+            <li><a href="/audit.html">Activity Log</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Account</div>
+          <ul class="footer-links">
+            <li><a href="/login.html">Login</a></li>
+            <li><a href="/register.html">Register</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 Developer Resource Manager</span>
+        <div class="footer-bottom-links">
+          <a href="/">Home</a>
+          <a href="/dashboard.html">Dashboard</a>
+        </div>
+      </div>
     </div>
   </footer>
+  </div>
 
   <script src="/js/auth.js"></script>
+  <script src="/js/toast.js"></script>
   <script src="/js/theme.js?v=20260318"></script>
+  <script src="/js/sidebar.js"></script>
   <script src="/js/edit.js"></script>
 </body>
 </html>

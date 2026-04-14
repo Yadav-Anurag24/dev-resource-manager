@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Add Resource – DRM</title>
+  <title>Activity Log – DRM</title>
   <script>
     (function () {
       try {
@@ -44,7 +44,7 @@
         <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
         <span class="sidebar-text">Dashboard</span>
       </a>
-      <a href="/audit.html" class="sidebar-link" data-page="audit" id="nav-audit-log" title="Activity Log">
+      <a href="/audit.html" class="sidebar-link active" data-page="audit" id="nav-audit-log" title="Activity Log">
         <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
         <span class="sidebar-text">Activity Log</span>
       </a>
@@ -65,102 +65,63 @@
 
   <!-- Layout Content -->
   <div class="layout-content">
-
-  <!-- Main Content -->
   <main class="main">
     <div class="container">
+
       <!-- Breadcrumb -->
-      <nav class="breadcrumb" id="breadcrumb">
-        <a href="/">Resources</a><span class="breadcrumb-sep">›</span><span class="breadcrumb-current">Add New Resource</span>
+      <nav class="breadcrumb">
+        <a href="/">Resources</a><span class="breadcrumb-sep">›</span><span class="breadcrumb-current">Activity Log</span>
       </nav>
-      <div class="form-card">
-        <h1 style="margin-bottom: 24px;">Add New Resource</h1>
 
-        <!-- Error Messages — shown by JS -->
-        <div id="error-box" class="alert alert-danger" style="display:none;"></div>
-
-        <form id="add-form" novalidate>
-
-          <div class="form-group">
-            <label for="title">Title *</label>
-            <input type="text" id="title" placeholder="e.g., Striver's DSA Sheet" />
-          </div>
-
-          <div class="form-group">
-            <label for="description">Description *</label>
-            <textarea id="description" placeholder="Describe this learning resource..."></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="category">Category *</label>
-            <select id="category">
-              <option value="">Select Category</option>
-              <option value="DSA">DSA</option>
-              <option value="Frontend">Frontend</option>
-              <option value="Backend">Backend</option>
-              <option value="Database">Database</option>
-              <option value="DevOps">DevOps</option>
-              <option value="Cloud">Cloud</option>
-              <option value="AI">AI</option>
-              <option value="Security">Security</option>
-              <option value="Mobile">Mobile</option>
-              <option value="Testing">Testing</option>
-              <option value="System Design">System Design</option>
-              <option value="Others">Others</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="difficulty">Difficulty *</label>
-            <select id="difficulty">
-              <option value="">Select Difficulty</option>
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="link">Resource Link (optional if file is uploaded)</label>
-            <input type="url" id="link" placeholder="https://example.com/resource" />
-            <small>Add a web URL, upload a file, or provide both.</small>
-          </div>
-
-          <div class="form-group">
-            <label for="resourceFile">Upload File (PDF, DOC, DOCX, EPUB, TXT)</label>
-            <input type="file" id="resourceFile" accept=".pdf,.doc,.docx,.epub,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/epub+zip,text/plain" />
-            <small>Maximum file size: 15MB.</small>
-          </div>
-
-          <div class="form-group">
-            <label for="tags">Tags</label>
-            <input type="text" id="tags" placeholder="e.g., arrays, graphs, sorting" />
-            <small>Separate tags with commas</small>
-          </div>
-
-          <div class="form-group">
-            <label for="rating">Rating (0–5)</label>
-            <select id="rating">
-              <option value="0">0 - Not Rated</option>
-              <option value="1">1 - Poor</option>
-              <option value="2">2 - Fair</option>
-              <option value="3">3 - Good</option>
-              <option value="4">4 - Very Good</option>
-              <option value="5">5 - Excellent</option>
-            </select>
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" id="submit-btn" class="btn btn-primary">Create Resource</button>
-            <a href="/" class="btn btn-secondary">Cancel</a>
-          </div>
-
-        </form>
+      <div class="page-header">
+        <h1>Activity Log</h1>
       </div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <div class="filter-form">
+          <div class="filter-group">
+            <label for="action-filter">Action</label>
+            <select id="action-filter">
+              <option value="">All Actions</option>
+              <option value="CREATE">Create</option>
+              <option value="UPDATE">Update</option>
+              <option value="DELETE">Delete</option>
+              <option value="LOGIN">Login</option>
+              <option value="REGISTER">Register</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="from-date">From</label>
+            <input type="date" id="from-date" />
+          </div>
+          <div class="filter-group">
+            <label for="to-date">To</label>
+            <input type="date" id="to-date" />
+          </div>
+          <div class="filter-group">
+            <label>&nbsp;</label>
+            <button id="filterBtn" class="btn btn-primary btn-sm" type="button">Filter</button>
+          </div>
+          <div class="filter-group">
+            <label>&nbsp;</label>
+            <button id="clearBtn" class="btn btn-secondary btn-sm" type="button">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <p id="page-loading" class="loading">Loading activity log...</p>
+      <div id="error-box" class="alert alert-danger" style="display: none;"></div>
+
+      <!-- Timeline Container -->
+      <div id="audit-container"></div>
+
+      <!-- Pagination -->
+      <div id="pagination-container"></div>
+
     </div>
   </main>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
@@ -206,6 +167,6 @@
   <script src="/js/toast.js"></script>
   <script src="/js/theme.js?v=20260318"></script>
   <script src="/js/sidebar.js"></script>
-  <script src="/js/add.js"></script>
+  <script src="/js/audit.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Add Resource – DRM</title>
+  <title>Profile – Dev Resource Manager</title>
   <script>
     (function () {
       try {
@@ -21,7 +21,7 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="/css/style.css?v=20260318" />
+  <link rel="stylesheet" href="/css/style.css?v=20260412" />
 </head>
 <body>
 
@@ -69,94 +69,75 @@
   <!-- Main Content -->
   <main class="main">
     <div class="container">
-      <!-- Breadcrumb -->
-      <nav class="breadcrumb" id="breadcrumb">
-        <a href="/">Resources</a><span class="breadcrumb-sep">›</span><span class="breadcrumb-current">Add New Resource</span>
-      </nav>
-      <div class="form-card">
-        <h1 style="margin-bottom: 24px;">Add New Resource</h1>
 
-        <!-- Error Messages — shown by JS -->
-        <div id="error-box" class="alert alert-danger" style="display:none;"></div>
-
-        <form id="add-form" novalidate>
-
-          <div class="form-group">
-            <label for="title">Title *</label>
-            <input type="text" id="title" placeholder="e.g., Striver's DSA Sheet" />
-          </div>
-
-          <div class="form-group">
-            <label for="description">Description *</label>
-            <textarea id="description" placeholder="Describe this learning resource..."></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="category">Category *</label>
-            <select id="category">
-              <option value="">Select Category</option>
-              <option value="DSA">DSA</option>
-              <option value="Frontend">Frontend</option>
-              <option value="Backend">Backend</option>
-              <option value="Database">Database</option>
-              <option value="DevOps">DevOps</option>
-              <option value="Cloud">Cloud</option>
-              <option value="AI">AI</option>
-              <option value="Security">Security</option>
-              <option value="Mobile">Mobile</option>
-              <option value="Testing">Testing</option>
-              <option value="System Design">System Design</option>
-              <option value="Others">Others</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="difficulty">Difficulty *</label>
-            <select id="difficulty">
-              <option value="">Select Difficulty</option>
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="link">Resource Link (optional if file is uploaded)</label>
-            <input type="url" id="link" placeholder="https://example.com/resource" />
-            <small>Add a web URL, upload a file, or provide both.</small>
-          </div>
-
-          <div class="form-group">
-            <label for="resourceFile">Upload File (PDF, DOC, DOCX, EPUB, TXT)</label>
-            <input type="file" id="resourceFile" accept=".pdf,.doc,.docx,.epub,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/epub+zip,text/plain" />
-            <small>Maximum file size: 15MB.</small>
-          </div>
-
-          <div class="form-group">
-            <label for="tags">Tags</label>
-            <input type="text" id="tags" placeholder="e.g., arrays, graphs, sorting" />
-            <small>Separate tags with commas</small>
-          </div>
-
-          <div class="form-group">
-            <label for="rating">Rating (0–5)</label>
-            <select id="rating">
-              <option value="0">0 - Not Rated</option>
-              <option value="1">1 - Poor</option>
-              <option value="2">2 - Fair</option>
-              <option value="3">3 - Good</option>
-              <option value="4">4 - Very Good</option>
-              <option value="5">5 - Excellent</option>
-            </select>
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" id="submit-btn" class="btn btn-primary">Create Resource</button>
-            <a href="/" class="btn btn-secondary">Cancel</a>
-          </div>
-
-        </form>
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>My Profile</h1>
       </div>
+
+      <!-- Profile Card -->
+      <div class="profile-layout">
+
+        <!-- Left: Avatar + Stats -->
+        <div class="profile-card">
+          <div class="profile-avatar" id="profile-avatar"></div>
+          <h2 class="profile-name" id="profile-name">—</h2>
+          <p class="profile-email" id="profile-email">—</p>
+          <span class="profile-role" id="profile-role"></span>
+          <div class="profile-stats">
+            <div class="profile-stat">
+              <span class="profile-stat-value" id="stat-resources">0</span>
+              <span class="profile-stat-label">Resources</span>
+            </div>
+            <div class="profile-stat">
+              <span class="profile-stat-value" id="stat-bookmarks">0</span>
+              <span class="profile-stat-label">Bookmarks</span>
+            </div>
+            <div class="profile-stat">
+              <span class="profile-stat-value" id="stat-joined">—</span>
+              <span class="profile-stat-label">Joined</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Settings Forms -->
+        <div class="profile-settings">
+
+          <!-- Update Username -->
+          <div class="settings-section">
+            <h3>Update Username</h3>
+            <form id="username-form" class="settings-form">
+              <div class="form-group">
+                <label for="new-username">Username</label>
+                <input type="text" id="new-username" minlength="2" maxlength="50" required />
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Save Username</button>
+            </form>
+          </div>
+
+          <!-- Change Password -->
+          <div class="settings-section">
+            <h3>Change Password</h3>
+            <form id="password-form" class="settings-form">
+              <div class="form-group">
+                <label for="current-password">Current Password</label>
+                <input type="password" id="current-password" minlength="6" required />
+              </div>
+              <div class="form-group">
+                <label for="new-password">New Password</label>
+                <input type="password" id="new-password" minlength="6" required />
+              </div>
+              <div class="form-group">
+                <label for="confirm-password">Confirm New Password</label>
+                <input type="password" id="confirm-password" minlength="6" required />
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Change Password</button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -204,8 +185,8 @@
 
   <script src="/js/auth.js"></script>
   <script src="/js/toast.js"></script>
-  <script src="/js/theme.js?v=20260318"></script>
+  <script src="/js/theme.js?v=20260412"></script>
   <script src="/js/sidebar.js"></script>
-  <script src="/js/add.js"></script>
+  <script src="/js/profile.js"></script>
 </body>
 </html>
