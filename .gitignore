@@ -3,3 +3,12 @@ node_modules/
 .DS_Store
 uploads/*
 !uploads/.gitkeep
+
+# Study / internal planning docs (kept locally, not on GitHub)
+CA1_CA2_PHASE_PLAN.md
+CA1_TEST_CHECKLIST.md
+CA2_IMPROVEMENT_PLAN.md
+ERASOR_AUTH_DIAGRAM_PROMPT.md
+JWT_AUTH_VIVA_GUIDE.md
+PHASE1_CONCEPTS.md
+VIVA_REVISION_GUIDE.md
