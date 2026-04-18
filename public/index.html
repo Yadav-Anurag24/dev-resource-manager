@@ -73,7 +73,14 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <div class="topbar-right">
-      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle color theme"></button>
+      <label class="theme-pill" aria-label="Toggle color theme">
+        <input type="checkbox" id="theme-toggle" />
+        <span class="pill-track">
+          <span class="pill-icon sun">☀️</span>
+          <span class="pill-thumb"></span>
+          <span class="pill-icon moon">🌙</span>
+        </span>
+      </label>
       <div id="topbar-auth-area"></div>
     </div>
   </header>

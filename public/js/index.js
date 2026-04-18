@@ -272,8 +272,8 @@ function renderTable(resources, searchTerm) {
         <a href="/details.html?id=${r._id}">${highlightMatch(r.title, searchTerm)}</a>
         ${renderSourceBadges(r)}
       </td>
-      <td><span class="badge badge-${r.category.toLowerCase()}">${escapeHtml(r.category)}</span></td>
-      <td><span class="badge badge-${r.difficulty.toLowerCase()}">${escapeHtml(r.difficulty)}</span></td>
+      <td><span class="badge badge-${r.category.toLowerCase().replace(/\s+/g, '-')}">${escapeHtml(r.category)}</span></td>
+      <td><span class="badge badge-${r.difficulty.toLowerCase().replace(/\s+/g, '-')}">${escapeHtml(r.difficulty)}</span></td>
       <td><span class="rating">${renderStars(r.rating)}</span></td>
       <td>${new Date(r.createdAt).toLocaleDateString()}</td>
       <td>

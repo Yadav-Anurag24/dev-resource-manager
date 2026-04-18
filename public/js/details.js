@@ -144,8 +144,8 @@ function renderDetails(r) {
     </div>
 
     <div class="detail-meta">
-      <span class="badge badge-${r.category.toLowerCase()}">${escapeHtml(r.category)}</span>
-      <span class="badge badge-${r.difficulty.toLowerCase()}">${escapeHtml(r.difficulty)}</span>
+      <span class="badge badge-${r.category.toLowerCase().replace(/\s+/g, '-')}">${escapeHtml(r.category)}</span>
+      <span class="badge badge-${r.difficulty.toLowerCase().replace(/\s+/g, '-')}">${escapeHtml(r.difficulty)}</span>
       <span class="rating">${renderStars(r.rating, true)}</span>
     </div>
 

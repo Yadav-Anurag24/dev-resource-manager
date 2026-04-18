@@ -36,31 +36,30 @@
   }
 
   function updateToggleButton(theme) {
-    const toggleBtn = document.getElementById('theme-toggle');
-    if (!toggleBtn) return;
+    var toggleEl = document.getElementById('theme-toggle');
+    if (!toggleEl) return;
 
-    const isDark = theme === 'dark';
-    toggleBtn.textContent = isDark ? 'Light' : 'Dark';
-    toggleBtn.setAttribute('aria-pressed', String(isDark));
-    toggleBtn.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    var isDark = theme === 'dark';
+    toggleEl.checked = isDark;
+    toggleEl.setAttribute('aria-pressed', String(isDark));
   }
 
   function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    var nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
     setTheme(nextTheme);
     updateToggleButton(nextTheme);
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    const activeTheme = getPreferredTheme();
+    var activeTheme = getPreferredTheme();
     applyTheme(activeTheme);
     updateToggleButton(activeTheme);
 
-    const toggleBtn = document.getElementById('theme-toggle');
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', toggleTheme);
+    var toggleEl = document.getElementById('theme-toggle');
+    if (toggleEl) {
+      toggleEl.addEventListener('change', toggleTheme);
     }
   });
 })();
